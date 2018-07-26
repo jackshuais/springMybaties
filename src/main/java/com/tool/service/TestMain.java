@@ -18,6 +18,7 @@ public class TestMain {
 //        }
 
         ClassPathXmlApplicationContext context = new ClassPathXmlApplicationContext("classpath*:bean.xml","classpath*:myBatis_config.xml");
+		
         context.start();
         TestService service = (TestService) context.getBean("testService");
         service.getTrump();
