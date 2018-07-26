@@ -1,0 +1,108 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:context="http://www.springframework.org/schema/context"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+	xmlns:aop="http://www.springframework.org/schema/aop"
+	xmlns:tx="http://www.springframework.org/schema/tx"
+	xmlns:task="http://www.springframework.org/schema/task"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans     
+       http://www.springframework.org/schema/beans/spring-beans-3.1.xsd    
+       http://www.springframework.org/schema/context     
+       http://www.springframework.org/schema/context/spring-context-3.1.xsd    
+       http://www.springframework.org/schema/tx     
+       http://www.springframework.org/schema/tx/spring-tx-3.1.xsd    
+       http://www.springframework.org/schema/aop     
+       http://www.springframework.org/schema/aop/spring-aop-3.1.xsd
+       http://www.springframework.org/schema/task  
+		http://www.springframework.org/schema/task/spring-task-3.1.xsd ">
+
+    <context:component-scan base-package="com" >
+    	<context:exclude-filter type="annotation" expression="org.springframework.stereotype.Controller" />
+    </context:component-scan>  
+    <!-- 启用注解enable autowiring annotation -->
+    <context:annotation-config/>
+
+
+    <bean id="propertyConfigurer" class="org.springframework.beans.factory.config.PropertyPlaceholderConfigurer"> 
+		<property name="locations"> 
+			<list> 
+				<value>jdbc.properties</value>
+			</list> 
+		</property> 
+	</bean> 
+    
+	<!-- 配置事务管理器 
+	-->
+	<bean id="transactionManagerData" class="org.springframework.jdbc.datasource.DataSourceTransactionManager">
+		<property name="dataSource" ref="dataSourceData"/>
+		<qualifier value="data"/> 
+	</bean>
+	
+	<bean id="transactionManagerGame" class="org.springframework.jdbc.datasource.DataSourceTransactionManager">
+		<property name="dataSource" ref="dataSourceGame"/>
+		<qualifier value="game"/> 
+	</bean>
+
+	
+	
+	<!-- 配置数据源 
+	-->
+	<bean id="dataSourceData" class="org.apache.commons.dbcp2.BasicDataSource" destroy-method="close">
+		<property name="driverClassName" value="${jdbc.driverClassName}"/>
+		<property name="url" value="${jdbc.data.url}"/>
+		<property name="username" value="${jdbc.data.username}"/>
+		<property name="password" value="${jdbc.data.password}"/>
+		<property name="timeBetweenEvictionRunsMillis" value="3600000"/>
+		<property name="minEvictableIdleTimeMillis" value="18000000"/>
+		<property name="testWhileIdle" value="true"/>
+		<property name="testOnBorrow" value="true"/>
+		<property name="validationQuery" value="select 1"/>
+	</bean>
+	
+	<bean id="dataSourceGame" class="org.apache.commons.dbcp2.BasicDataSource" destroy-method="close">
+		<property name="driverClassName" value="${jdbc.driverClassName}"/>
+		<property name="url" value="${jdbc.game.url}"/>
+		<property name="username" value="${jdbc.game.username}"/>
+		<property name="password" value="${jdbc.game.password}"/>
+		<property name="timeBetweenEvictionRunsMillis" value="3600000"/>
+		<property name="minEvictableIdleTimeMillis" value="18000000"/>
+		<property name="testWhileIdle" value="true"/>
+		<property name="testOnBorrow" value="true"/>
+		<property name="validationQuery" value="select 1"/>
+	</bean>
+	
+	<!-- jdbcTemplate -->
+	<bean id="jdbcTemplateData" class="org.springframework.jdbc.core.JdbcTemplate">
+        <property name="dataSource" ref="dataSourceData"/>
+    </bean>
+    <bean id="jdbcTemplateGame" class="org.springframework.jdbc.core.JdbcTemplate">
+        <property name="dataSource" ref="dataSourceGame"/>
+    </bean>
+	
+	<!-- 用注解来实现事务管理 -->
+	<tx:annotation-driven transaction-manager="transactionManagerData" />
+	<tx:annotation-driven transaction-manager="transactionManagerGame" />
+	<!-- 
+	<tx:annotation-driven />
+	 -->
+	<!-- mybatis-->
+	<bean id="sqlGameSessionFactory" class="org.mybatis.spring.SqlSessionFactoryBean">
+		<property name="dataSource" ref="dataSourceGame" />
+        <property name="mapperLocations" value="classpath*:/mapper/game/**/*.xml"></property>
+	</bean>
+
+	<bean id="sqlBaseSessionFactory" class="org.mybatis.spring.SqlSessionFactoryBean">
+		<property name="dataSource" ref="dataSourceData" />
+        <property name="mapperLocations" value="classpath*:mapper/data/**/*.xml"></property>
+	</bean>
+    <!--自动扫描-->
+	<bean id = "gameScannerConfig" class="org.mybatis.spring.mapper.MapperScannerConfigurer"  >
+		<property name="basePackage" value="com.tool.dao.game"></property>
+		<property name="sqlSessionFactoryBeanName" value="sqlGameSessionFactory"></property>
+	</bean>
+
+	<bean id = "baseScannerConfig" class="org.mybatis.spring.mapper.MapperScannerConfigurer"  >
+		<property name="basePackage" value="com.tool.dao.data"></property>
+		<property name="sqlSessionFactoryBeanName" value="sqlBaseSessionFactory"></property>
+	</bean>
+</beans>

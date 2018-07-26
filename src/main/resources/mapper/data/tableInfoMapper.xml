@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.tool.dao.data.DataDao">
+    <select id="getDataInfo" parameterType="java.lang.String" resultType="java.util.HashMap">
+        SELECT
+           COLUMN_NAME,
+           DATA_TYPE,
+           COLUMN_COMMENT
+           FROM
+            INFORMATION_SCHEMA.COLUMNS
+         WHERE TABLE_SCHEMA = 'data_dev'
+          AND TABLE_NAME = #{table_name}
+    </select>
+</mapper>
